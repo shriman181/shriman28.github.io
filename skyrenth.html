@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skyrenth — Physical Security Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Barlow+Condensed:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#020913;
+  --s1:#070F1D;
+  --s2:#0C1830;
+  --s3:#111F3A;
+  --card:#0A1528;
+  --card-h:#0F1E38;
+  --cyan:#00D4FF;
+  --c10:rgba(0,212,255,.10);
+  --c20:rgba(0,212,255,.20);
+  --c40:rgba(0,212,255,.40);
+  --green:#00FF88;
+  --g10:rgba(0,255,136,.10);
+  --amber:#FFB020;
+  --a10:rgba(255,176,32,.10);
+  --red:#FF3B47;
+  --r10:rgba(255,59,71,.10);
+  --t1:#E2EEF6;
+  --t2:#7A9AB5;
+  --t3:#3D5872;
+  --border:rgba(0,212,255,.10);
+  --borderh:rgba(0,212,255,.30);
+  --fd:'Orbitron',monospace;
+  --fm:'IBM Plex Mono',monospace;
+  --fc:'Barlow Condensed',sans-serif;
+  --fb:'Barlow',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--t1);font-family:var(--fb);overflow-x:hidden;line-height:1.6}
+.container{max-width:1180px;margin:0 auto;padding:0 28px}
+.label{font-family:var(--fm);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--cyan)}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .75s ease,transform .75s ease}
+.reveal.vis{opacity:1;transform:none}
+
+/* ─── NAV ─── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(2,9,19,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{width:34px;height:34px;border:1.5px solid var(--cyan);border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative}
+.logo-icon::before{content:'';position:absolute;width:10px;height:10px;border-radius:50%;border:1.5px solid var(--cyan)}
+.logo-icon::after{content:'';position:absolute;width:4px;height:4px;border-radius:50%;background:var(--cyan);animation:core-pulse 2s ease infinite}
+@keyframes core-pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.logo-text{font-family:var(--fd);font-size:17px;font-weight:700;letter-spacing:3px;color:var(--t1)}
+.logo-text span{color:var(--cyan)}
+.nav-links{display:flex;gap:36px;list-style:none}
+.nav-links a{font-family:var(--fc);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--cyan)}
+.nav-r{display:flex;gap:10px;align-items:center}
+.btn-g{font-family:var(--fm);font-size:11px;letter-spacing:1px;padding:8px 16px;border:1px solid var(--border);border-radius:3px;background:transparent;color:var(--t2);cursor:pointer;text-decoration:none;transition:all .2s}
+.btn-g:hover{border-color:var(--c40);color:var(--cyan)}
+.btn-p{font-family:var(--fm);font-size:11px;letter-spacing:1px;padding:8px 20px;background:var(--cyan);color:var(--void);border:none;border-radius:3px;cursor:pointer;font-weight:500;text-decoration:none;transition:all .2s}
+.btn-p:hover{background:#33DDFF;box-shadow:0 0 24px rgba(0,212,255,.45)}
+
+/* ─── HERO ─── */
+.hero{min-height:100vh;display:flex;align-items:center;padding-top:64px;position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,212,255,.13) 1px,transparent 1px);background-size:38px 38px;pointer-events:none}
+.hero-lines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);pointer-events:none;z-index:1}
+.hero-glow{position:absolute;width:900px;height:900px;background:radial-gradient(circle,rgba(0,212,255,.05) 0%,transparent 70%);top:50%;right:-180px;transform:translateY(-50%);pointer-events:none}
+
+/* Radar */
+.radar{position:absolute;right:4%;top:50%;transform:translateY(-50%);width:520px;height:520px;opacity:.14;pointer-events:none}
+.r-ring{position:absolute;border-radius:50%;border:1px solid var(--cyan)}
+.r-ring:nth-child(1){inset:0}
+.r-ring:nth-child(2){inset:22%;opacity:.7}
+.r-ring:nth-child(3){inset:44%;opacity:.5}
+.r-ring:nth-child(4){inset:64%;opacity:.4}
+.r-sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 285deg,rgba(0,212,255,.35) 352deg,rgba(0,212,255,.9) 360deg);animation:rspin 4s linear infinite}
+.r-cross{position:absolute;inset:0}
+.r-cross::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(0,212,255,.25)}
+.r-cross::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(0,212,255,.25)}
+@keyframes rspin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+.hero-inner{position:relative;z-index:2;width:100%;display:grid;grid-template-columns:55fr 45fr;gap:56px;align-items:center;padding:64px 0}
+
+/* Hero left */
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--c20);border-radius:20px;background:var(--c10);margin-bottom:26px}
+.h-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:gdot 2s ease infinite}
+@keyframes gdot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,255,136,.4)}50%{opacity:.6;box-shadow:0 0 0 7px rgba(0,255,136,0)}}
+.hero-h1{font-family:var(--fd);font-size:clamp(30px,3.8vw,50px);font-weight:700;line-height:1.08;letter-spacing:-.3px;margin-bottom:22px}
+.hero-h1 .l2{color:var(--cyan);display:block}
+.hero-sub{font-size:17px;color:var(--t2);line-height:1.72;margin-bottom:36px;max-width:460px}
+.hero-ctas{display:flex;gap:14px;margin-bottom:44px;flex-wrap:wrap}
+.btn-hero{font-family:var(--fm);font-size:12px;letter-spacing:1.5px;padding:14px 28px;border-radius:3px;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;text-transform:uppercase}
+.btn-hp{background:var(--cyan);color:var(--void);border:none}
+.btn-hp:hover{background:#33DDFF;box-shadow:0 0 32px rgba(0,212,255,.55);transform:translateY(-1px)}
+.btn-hs{background:transparent;color:var(--t1);border:1px solid var(--borderh)}
+.btn-hs:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-1px)}
+.hero-trust{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.trust-i{display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:11px;color:var(--t3);letter-spacing:.3px}
+.trust-i .tick{color:var(--green)}
+
+/* Command Center Card */
+.cmd{background:var(--s2);border:1px solid var(--border);border-radius:6px;overflow:hidden;position:relative;box-shadow:0 0 60px rgba(0,212,255,.07),0 40px 80px rgba(0,0,0,.55)}
+.cmd::before{content:'';position:absolute;top:0;left:14px;width:18px;height:18px;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan);pointer-events:none;z-index:5}
+.cmd::after{content:'';position:absolute;bottom:0;right:14px;width:18px;height:18px;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan);pointer-events:none;z-index:5}
+.cmd-head{background:var(--s3);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
+.cmd-title{font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--t2);text-transform:uppercase}
+.cmd-live{display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:9px;color:var(--green);letter-spacing:1.5px}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:gdot 1.5s ease infinite}
+.cmd-stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border)}
+.cs{padding:16px;text-align:center;border-right:1px solid var(--border)}
+.cs:last-child{border-right:none}
+.cs-v{font-family:var(--fd);font-size:26px;font-weight:700;color:var(--cyan)}
+.cs-v.red{color:var(--red)}
+.cs-v.amber{color:var(--amber)}
+.cs-l{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;margin-top:2px}
+.cmd-feed{height:252px;overflow:hidden;position:relative}
+.cmd-feed-inner{display:flex;flex-direction:column}
+.ev{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(0,212,255,.04);font-family:var(--fm);font-size:11px;line-height:1.4;animation:evslide .4s ease}
+@keyframes evslide{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+.ev:hover{background:rgba(0,212,255,.03)}
+.ev-time{color:var(--t3);white-space:nowrap;min-width:58px}
+.ev-type{font-size:9px;letter-spacing:1px;padding:2px 6px;border-radius:2px;white-space:nowrap;margin-top:1px;flex-shrink:0}
+.eg{background:var(--g10);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.ed{background:var(--r10);color:var(--red);border:1px solid rgba(255,59,71,.2)}
+.ec{background:var(--c10);color:var(--cyan);border:1px solid var(--c20)}
+.ep{background:var(--a10);color:var(--amber);border:1px solid rgba(255,176,32,.2)}
+.ea{background:rgba(255,176,32,.07);color:var(--amber);border:1px solid rgba(255,176,32,.3)}
+.ei{background:var(--r10);color:var(--red);border:1px solid rgba(255,59,71,.3)}
+.ev-msg{color:var(--t2);flex:1}
+.cmd-foot{background:var(--s3);border-top:1px solid var(--border);padding:8px 16px;display:flex;gap:18px}
+.sys-s{display:flex;align-items:center;gap:5px;font-family:var(--fm);font-size:9px;letter-spacing:.5px;color:var(--t3)}
+.sys-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+
+/* ─── TICKER ─── */
+.ticker{background:var(--s1);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:10px 0;overflow:hidden}
+.ticker-inner{display:flex;gap:56px;white-space:nowrap;animation:tick 32s linear infinite}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.t-item{font-family:var(--fm);font-size:11px;color:var(--t3);display:flex;align-items:center;gap:8px}
+.t-chip{font-size:9px;letter-spacing:.5px;padding:2px 6px;border-radius:2px}
+
+/* ─── SECTIONS ─── */
+section{padding:96px 0}
+.sec-label{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.sec-label::before{content:'';display:block;width:22px;height:2px;background:var(--cyan)}
+.sec-h2{font-family:var(--fc);font-size:clamp(34px,4.5vw,54px);font-weight:700;line-height:1.04;letter-spacing:-.3px;margin-bottom:14px}
+.sec-h2 span{color:var(--cyan)}
+.sec-sub{font-size:17px;color:var(--t2);line-height:1.72;max-width:580px}
+
+/* ─── PROBLEM ─── */
+.prob{background:var(--s1)}
+.prob-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:56px;background:var(--border)}
+.pc{background:var(--s1);padding:40px 32px;position:relative;overflow:hidden}
+.pc::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--red),transparent)}
+.pc-num{font-family:var(--fd);font-size:52px;font-weight:900;line-height:1;-webkit-text-stroke:1px rgba(255,59,71,.3);color:transparent;margin-bottom:16px}
+.pc-title{font-family:var(--fc);font-size:22px;font-weight:600;color:var(--t1);margin-bottom:12px}
+.pc-desc{font-size:15px;color:var(--t2);line-height:1.65}
+.pc-stat{margin-top:24px;padding:12px 16px;background:var(--r10);border-left:3px solid var(--red);font-family:var(--fm);font-size:11px;color:var(--red);letter-spacing:.3px}
+
+/* ─── PLATFORM ─── */
+.platform{background:var(--void)}
+.mod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;margin-top:56px;background:var(--border)}
+.mc{background:var(--card);padding:40px;position:relative;overflow:hidden;cursor:default;transition:background .3s}
+.mc:hover{background:var(--card-h)}
+.mc::before{content:'';position:absolute;top:10px;left:10px;width:16px;height:16px;border-top:2px solid var(--c40);border-left:2px solid var(--c40);transition:border-color .3s}
+.mc:hover::before{border-color:var(--cyan)}
+.mc-scan{position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.7),transparent);transform:translateY(-100%);pointer-events:none}
+.mc:hover .mc-scan{animation:scanbeam 1.8s ease infinite}
+@keyframes scanbeam{0%{transform:translateY(-100%)}100%{transform:translateY(5000%)}}
+.mod-num{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--t3);margin-bottom:22px;text-transform:uppercase}
+.mod-icon{width:48px;height:48px;border:1px solid var(--c20);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;background:var(--c10);transition:all .3s}
+.mc:hover .mod-icon{border-color:var(--c40);box-shadow:0 0 20px rgba(0,212,255,.18)}
+.mod-icon svg{width:24px;height:24px;stroke:var(--cyan);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.mod-title{font-family:var(--fc);font-size:27px;font-weight:600;color:var(--t1);margin-bottom:10px}
+.mod-desc{font-size:15px;color:var(--t2);line-height:1.65;margin-bottom:26px}
+.mod-feats{display:flex;flex-direction:column;gap:8px}
+.mf{display:flex;align-items:flex-start;gap:10px;font-family:var(--fm);font-size:12px;color:var(--t2)}
+.mf-dot{width:5px;height:5px;background:var(--cyan);border-radius:50%;margin-top:5px;flex-shrink:0}
+.mod-status{display:inline-flex;align-items:center;gap:6px;margin-top:26px;padding:4px 10px;border:1px solid rgba(0,255,136,.2);border-radius:20px;background:var(--g10)}
+.mod-status span{font-family:var(--fm);font-size:9px;letter-spacing:2px;color:var(--green);text-transform:uppercase}
+
+/* ─── LIVE DEMO ─── */
+.demo{background:var(--s1)}
+.demo-grid{display:grid;grid-template-columns:200px 1fr;gap:32px;margin-top:56px;align-items:start}
+.demo-stats{display:flex;flex-direction:column;gap:2px}
+.dsc{padding:20px;background:var(--card);border:1px solid var(--border);position:relative}
+.dsc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.dsc.cyan::before{background:var(--cyan)}
+.dsc.green::before{background:var(--green)}
+.dsc.amber::before{background:var(--amber)}
+.dsc.red::before{background:var(--red)}
+.dsc-l{font-family:var(--fm);font-size:9px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;margin-bottom:6px}
+.dsc-v{font-family:var(--fd);font-size:28px;font-weight:700;line-height:1}
+.dsc.cyan .dsc-v{color:var(--cyan)}
+.dsc.green .dsc-v{color:var(--green)}
+.dsc.amber .dsc-v{color:var(--amber)}
+.dsc.red .dsc-v{color:var(--red)}
+.dsc-s{font-family:var(--fm);font-size:10px;color:var(--t3);margin-top:3px}
+.demo-card{background:var(--card);border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.dc-head{background:var(--s3);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+.dc-title{font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--t2);text-transform:uppercase}
+.dc-live{display:flex;align-items:center;gap:6px}
+.dc-live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:gdot 1.5s ease infinite}
+.dc-live span{font-family:var(--fm);font-size:9px;color:var(--green);letter-spacing:1.5px}
+.dt{width:100%;border-collapse:collapse}
+.dt th{background:var(--s2);padding:10px 18px;text-align:left;font-family:var(--fm);font-size:8px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;border-bottom:1px solid var(--border)}
+.dt td{padding:12px 18px;font-family:var(--fm);font-size:11px;color:var(--t2);border-bottom:1px solid rgba(0,212,255,.04)}
+.dt tr:hover td{background:rgba(0,212,255,.02)}
+.new-row{animation:rowflash 1s ease}
+@keyframes rowflash{0%{background:rgba(0,212,255,.09)}100%{background:transparent}}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:2px;font-size:9px;font-weight:500;letter-spacing:.5px}
+.chip-low{background:var(--g10);color:var(--green)}
+.chip-med{background:var(--a10);color:var(--amber)}
+.chip-high{background:var(--r10);color:var(--red)}
+
+/* ─── STATS ─── */
+.stats{background:var(--void)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);margin-top:56px}
+.sb{background:var(--void);padding:48px 28px;text-align:center;position:relative;overflow:hidden}
+.sb::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:36px;height:2px;background:var(--cyan)}
+.sb-num{font-family:var(--fd);font-size:48px;font-weight:900;color:var(--cyan);line-height:1;margin-bottom:8px}
+.sb-unit{font-family:var(--fd);font-size:26px}
+.sb-label{font-family:var(--fc);font-size:15px;font-weight:500;color:var(--t2);letter-spacing:.5px;text-transform:uppercase}
+.sb-sub{font-family:var(--fm);font-size:10px;color:var(--t3);margin-top:5px}
+
+/* ─── HOW ─── */
+.how{background:var(--s1)}
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:56px;background:var(--border)}
+.hs{background:var(--s1);padding:48px 36px;position:relative;transition:background .3s}
+.hs:hover{background:var(--s2)}
+.hs::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--cyan),transparent);opacity:0;transition:opacity .3s}
+.hs:hover::before{opacity:1}
+.hs-num{font-family:var(--fd);font-size:72px;font-weight:900;line-height:1;-webkit-text-stroke:1px rgba(0,212,255,.28);color:transparent;margin-bottom:22px}
+.hs-title{font-family:var(--fc);font-size:24px;font-weight:600;color:var(--t1);margin-bottom:10px}
+.hs-desc{font-size:15px;color:var(--t2);line-height:1.65}
+.hs-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
+.hs-tag{font-family:var(--fm);font-size:9px;letter-spacing:.5px;padding:4px 8px;border:1px solid var(--border);border-radius:2px;color:var(--t3)}
+
+/* ─── SEGMENTS ─── */
+.segs{background:var(--void)}
+.segs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:56px}
+.sgc{background:var(--card);border:1px solid var(--border);border-radius:3px;padding:28px 24px;transition:all .3s;cursor:default;position:relative;overflow:hidden}
+.sgc:hover{border-color:var(--borderh);transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,.4),0 0 20px rgba(0,212,255,.05)}
+.sgc::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green));transform:scaleX(0);transition:transform .35s;transform-origin:left}
+.sgc:hover::before{transform:scaleX(1)}
+.sg-icon{width:44px;height:44px;background:var(--c10);border:1px solid var(--c20);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.sg-icon svg{width:22px;height:22px;stroke:var(--cyan);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.sg-title{font-family:var(--fc);font-size:19px;font-weight:600;color:var(--t1);margin-bottom:8px}
+.sg-desc{font-size:13px;color:var(--t2);line-height:1.6}
+
+/* ─── PRICING ─── */
+.pricing{background:var(--s1)}
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:56px;background:var(--border)}
+.prc{background:var(--s1);padding:48px 36px;position:relative;transition:background .3s}
+.prc:hover{background:var(--s2)}
+.prc.feat{background:var(--s2);border-top:3px solid var(--cyan)}
+.prc-badge{display:inline-block;font-family:var(--fm);font-size:9px;letter-spacing:2px;padding:3px 8px;background:var(--c10);border:1px solid var(--c20);color:var(--cyan);border-radius:2px;margin-bottom:18px}
+.prc-name{font-family:var(--fd);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--t2);text-transform:uppercase;margin-bottom:6px}
+.prc-val{font-family:var(--fd);font-size:40px;font-weight:900;color:var(--t1);line-height:1;margin-bottom:4px}
+.prc-cur{font-size:20px;color:var(--t2);vertical-align:top;margin-top:8px;display:inline-block}
+.prc-per{font-family:var(--fm);font-size:11px;color:var(--t3);margin-bottom:30px;letter-spacing:.5px}
+.prc-feats{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:34px}
+.prc-feats li{display:flex;align-items:flex-start;gap:10px;font-family:var(--fm);font-size:11px;color:var(--t2)}
+.pf-ck{color:var(--green);margin-top:1px;flex-shrink:0}
+.prc-cta{display:block;width:100%;padding:14px;text-align:center;font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;border-radius:3px;cursor:pointer;transition:all .2s;text-decoration:none}
+.prc-ghost{background:transparent;border:1px solid var(--borderh);color:var(--t1)}
+.prc-ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+.prc-prime{background:var(--cyan);border:none;color:var(--void);font-weight:600}
+.prc-prime:hover{background:#33DDFF;box-shadow:0 0 22px rgba(0,212,255,.45)}
+
+/* ─── FOUNDER ─── */
+.founder{background:var(--void)}
+.fn-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.fn-quote{font-family:var(--fc);font-size:clamp(20px,2.6vw,30px);font-weight:600;line-height:1.42;color:var(--t1);margin-bottom:28px;padding-left:24px;border-left:3px solid var(--cyan)}
+.fn-bio{font-size:15px;color:var(--t2);line-height:1.72;margin-bottom:22px}
+.fn-name{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--t1);letter-spacing:1.5px}
+.fn-role{font-family:var(--fm);font-size:10px;color:var(--t3);letter-spacing:2px;margin-top:3px}
+.fn-card{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:36px;position:relative;overflow:hidden}
+.fn-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.fn-avatar{width:76px;height:76px;border-radius:8px;background:var(--s3);border:2px solid var(--c20);display:flex;align-items:center;justify-content:center;margin-bottom:18px;font-family:var(--fd);font-size:26px;font-weight:700;color:var(--cyan);letter-spacing:2px}
+.fn-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.fm-box{padding:14px;background:var(--card);border:1px solid var(--border);border-radius:2px}
+.fm-v{font-family:var(--fd);font-size:18px;font-weight:700;color:var(--cyan)}
+.fm-l{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;margin-top:2px}
+
+/* ─── CTA ─── */
+.cta{background:var(--s1);position:relative;overflow:hidden;text-align:center;padding:96px 0}
+.cta::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,212,255,.09) 1px,transparent 1px);background-size:38px 38px}
+.cta-glow{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(0,212,255,.07) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.cta-inner{position:relative;z-index:1}
+.cta-h2{font-family:var(--fd);font-size:clamp(30px,4.5vw,50px);font-weight:700;line-height:1.08;margin-bottom:14px}
+.cta-h2 span{color:var(--cyan)}
+.cta-sub{font-size:17px;color:var(--t2);margin-bottom:38px;max-width:480px;margin-left:auto;margin-right:auto}
+.cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.cta-note{font-family:var(--fm);font-size:10px;color:var(--t3);letter-spacing:.5px;margin-top:22px}
+
+/* ─── FOOTER ─── */
+footer{background:var(--void);border-top:1px solid var(--border);padding:56px 0 28px}
+.foot-grid{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;gap:44px;margin-bottom:44px}
+.foot-brand .logo-text{font-size:19px;display:block;margin-bottom:12px}
+.foot-tag{font-size:14px;color:var(--t3);line-height:1.65;max-width:240px;margin-bottom:18px}
+.foot-contact{font-family:var(--fm);font-size:12px;color:var(--t2)}
+.foot-col-t{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--t3);text-transform:uppercase;margin-bottom:18px}
+.foot-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.foot-links a{font-size:14px;color:var(--t2);text-decoration:none;transition:color .2s}
+.foot-links a:hover{color:var(--cyan)}
+.foot-bottom{border-top:1px solid var(--border);padding-top:22px;display:flex;align-items:center;justify-content:space-between}
+.foot-copy{font-family:var(--fm);font-size:10px;color:var(--t3);letter-spacing:.5px}
+.foot-badges{display:flex;gap:10px}
+.fbadge{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;color:var(--t3);padding:3px 8px;border:1px solid var(--border);border-radius:2px;text-transform:uppercase}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:960px){
+  .hero-inner{grid-template-columns:1fr}
+  .cmd{display:none}
+  .mod-grid{grid-template-columns:1fr}
+  .prob-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .how-steps{grid-template-columns:1fr}
+  .segs-grid{grid-template-columns:1fr 1fr}
+  .price-grid{grid-template-columns:1fr}
+  .fn-grid{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .nav-links{display:none}
+  .demo-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#home" class="logo">
+    <div class="logo-icon"></div>
+    <span class="logo-text">SKY<span>RENTH</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#platform">Platform</a></li>
+    <li><a href="#solutions">Intelligence</a></li>
+    <li><a href="#how">Deployment</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <div class="nav-r">
+    <a href="#" class="btn-g">SECURE LOGIN</a>
+    <a href="#cta" class="btn-p">REQUEST DEMO →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-grid"></div>
+  <div class="hero-lines"></div>
+  <div class="hero-glow"></div>
+  <div class="radar">
+    <div class="r-ring"></div>
+    <div class="r-ring"></div>
+    <div class="r-ring"></div>
+    <div class="r-ring"></div>
+    <div class="r-sweep"></div>
+    <div class="r-cross"></div>
+  </div>
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <span class="h-dot"></span>
+          <span class="label" style="margin:0;font-size:10px;letter-spacing:2px">AI Physical Security Intelligence Platform</span>
+        </div>
+        <h1 class="hero-h1">
+          From Access Events<br>
+          <span class="l2" id="tw">to Security Decisions.</span>
+        </h1>
+        <p class="hero-sub">The AI layer that converts badge taps, visitor logs, and incident data into real-time decisions. No rip-and-replace. No data migration. Just intelligence — layered over what you already have.</p>
+        <div class="hero-ctas">
+          <a href="#cta" class="btn-hero btn-hp">REQUEST DEMO →</a>
+          <a href="#platform" class="btn-hero btn-hs">EXPLORE PLATFORM</a>
+        </div>
+        <div class="hero-trust">
+          <div class="trust-i"><span class="tick">✓</span>DPDP Compliant</div>
+          <div class="trust-i" style="color:var(--t3)">·</div>
+          <div class="trust-i"><span class="tick">✓</span>ISO 27001 Ready</div>
+          <div class="trust-i" style="color:var(--t3)">·</div>
+          <div class="trust-i"><span class="tick">✓</span>No Migration Required</div>
+        </div>
+      </div>
+
+      <!-- COMMAND CENTER -->
+      <div class="cmd">
+        <div class="cmd-head">
+          <span class="cmd-title">SKYRENTH COMMAND CENTER · Embassy Tech Park, BLR</span>
+          <div class="cmd-live"><div class="live-dot"></div>LIVE</div>
+        </div>
+        <div class="cmd-stats">
+          <div class="cs"><div class="cs-v" id="vcnt">247</div><div class="cs-l">Active Visitors</div></div>
+          <div class="cs"><div class="cs-v red">3</div><div class="cs-l">Open Incidents</div></div>
+          <div class="cs"><div class="cs-v amber">48</div><div class="cs-l">Guards On Duty</div></div>
+        </div>
+        <div class="cmd-feed"><div class="cmd-feed-inner" id="efeed"></div></div>
+        <div class="cmd-foot">
+          <div class="sys-s"><div class="sys-dot"></div>ACCESS CONTROL</div>
+          <div class="sys-s"><div class="sys-dot"></div>VISITOR</div>
+          <div class="sys-s"><div class="sys-dot"></div>INCIDENTS</div>
+          <div class="sys-s"><div class="sys-dot"></div>PATROL</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker"></div>
+</div>
+
+<!-- PROBLEM -->
+<section class="prob" id="problem">
+  <div class="container">
+    <div class="sec-label reveal"><span class="label">The Problem</span></div>
+    <h2 class="sec-h2 reveal">Your facility generates thousands<br>of security events daily.<br><span>Nobody reads them.</span></h2>
+    <p class="sec-sub reveal">Physical security teams are flying blind — reactive, paper-heavy, sitting on a goldmine of behavioral data they've never analyzed.</p>
+    <div class="prob-grid">
+      <div class="pc reveal">
+        <div class="pc-num">01</div>
+        <div class="pc-title">Access Logs Nobody Reads</div>
+        <div class="pc-desc">Every badge tap, failed entry, and after-hours access sits in a database security teams only open after something goes wrong. Zero proactive intelligence — only reactive forensics.</div>
+        <div class="pc-stat">Avg. enterprise facility generates 10,000+ access events/day — 0% analyzed in real time.</div>
+      </div>
+      <div class="pc reveal">
+        <div class="pc-num">02</div>
+        <div class="pc-title">Incident Reporting is WhatsApp</div>
+        <div class="pc-desc">Guards report via text, paper, or radio. No structured data. No pattern detection. The same incident type occurs six times at the same location before anyone notices there's a pattern.</div>
+        <div class="pc-stat">68% of recurring security incidents are caused by undetected patterns from prior incidents.</div>
+      </div>
+      <div class="pc reveal">
+        <div class="pc-num">03</div>
+        <div class="pc-title">Guard Scheduling is Excel</div>
+        <div class="pc-desc">Security managers build schedules by intuition and headcount. Patrol completion is self-reported. There's no way to verify a guard walked the perimeter or just sat at a checkpoint.</div>
+        <div class="pc-stat">40% of guard time is misallocated relative to actual historical incident hotspots.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORM -->
+<section class="platform" id="platform">
+  <div class="container">
+    <div class="sec-label reveal"><span class="label">The Platform</span></div>
+    <h2 class="sec-h2 reveal">Four modules. <span>One intelligence layer.</span><br>Zero migration.</h2>
+    <p class="sec-sub reveal">Skyrenth integrates with your existing badge readers, cameras, and access control systems — and makes them think.</p>
+    <div class="mod-grid">
+
+      <div class="mc reveal">
+        <div class="mc-scan"></div>
+        <div class="mod-num">MODULE 01 · VISITOR INTELLIGENCE ENGINE</div>
+        <div class="mod-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="19" cy="9" r="2"/><line x1="19" y1="13" x2="19" y2="15"/><line x1="19" y1="15" x2="20.5" y2="16.5"/></svg>
+        </div>
+        <h3 class="mod-title">Visitor Intelligence Engine</h3>
+        <p class="mod-desc">From pre-registration to biometric exit — complete visitor lifecycle with AI risk scoring on every check-in. Behavioral baselines flag anomalies before they become incidents.</p>
+        <div class="mod-feats">
+          <div class="mf"><span class="mf-dot"></span>Pre-arrival ID verification via Aadhaar OCR & DigiLocker integration</div>
+          <div class="mf"><span class="mf-dot"></span>Real-time risk scoring (1–100) surfaced at gate on guard tablet — flagged instantly</div>
+          <div class="mf"><span class="mf-dot"></span>Live visitor heatmap — last-known zone from badge tap events across all buildings</div>
+          <div class="mf"><span class="mf-dot"></span>Auto-expiring RFID badges scoped to authorized zones only; deactivate on exit</div>
+          <div class="mf"><span class="mf-dot"></span>Behavioral baseline per recurring vendor — deviation from pattern triggers alert</div>
+        </div>
+        <div class="mod-status"><div class="live-dot"></div><span>ACTIVE · LIVE</span></div>
+      </div>
+
+      <div class="mc reveal">
+        <div class="mc-scan"></div>
+        <div class="mod-num">MODULE 02 · ACCESS AUDIT INTELLIGENCE</div>
+        <div class="mod-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+        </div>
+        <h3 class="mod-title">Access Audit Intelligence</h3>
+        <p class="mod-desc">Your access control system already generates the data. Skyrenth reads every event in real time and tells you what matters — before it becomes a breach.</p>
+        <div class="mod-feats">
+          <div class="mf"><span class="mf-dot"></span>Tailgating detection via camera + badge timing correlation — no new hardware</div>
+          <div class="mf"><span class="mf-dot"></span>Access velocity alerts: badge used at two points faster than physically possible</div>
+          <div class="mf"><span class="mf-dot"></span>Ghost access: ex-employee badges still active flagged automatically and blocked</div>
+          <div class="mf"><span class="mf-dot"></span>Zone compliance scoring per employee and contractor — exportable for audit</div>
+          <div class="mf"><span class="mf-dot"></span>One-click audit export for ISO 27001, SOC 2, DPDP, Factory Act compliance</div>
+        </div>
+        <div class="mod-status"><div class="live-dot"></div><span>ACTIVE · LIVE</span></div>
+      </div>
+
+      <div class="mc reveal">
+        <div class="mc-scan"></div>
+        <div class="mod-num">MODULE 03 · INCIDENT INTELLIGENCE PLATFORM</div>
+        <div class="mod-icon">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h3 class="mod-title">Incident Intelligence Platform</h3>
+        <p class="mod-desc">Transforms unstructured guard reports into structured intelligence. NLP converts voice and text notes into complete, categorized, escalation-ready incident reports in seconds.</p>
+        <div class="mod-feats">
+          <div class="mf"><span class="mf-dot"></span>Offline-first Guard App: structured capture with auto-GPS and zone tagging</div>
+          <div class="mf"><span class="mf-dot"></span>NLP auto-fill: rough notes convert to complete incident report in under 2 minutes</div>
+          <div class="mf"><span class="mf-dot"></span>Pattern detection: recurring hotspot identification across locations and time windows</div>
+          <div class="mf"><span class="mf-dot"></span>Predictive risk calendar: high-risk windows forecast from 90 days of historical data</div>
+          <div class="mf"><span class="mf-dot"></span>P1–P3 SLA tracking with immutable escalation and resolution audit trail</div>
+        </div>
+        <div class="mod-status"><div class="live-dot"></div><span>ACTIVE · LIVE</span></div>
+      </div>
+
+      <div class="mc reveal">
+        <div class="mc-scan"></div>
+        <div class="mod-num">MODULE 04 · GUARD INTELLIGENCE & SCHEDULING</div>
+        <div class="mod-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <h3 class="mod-title">Guard Intelligence & Scheduling</h3>
+        <p class="mod-desc">AI-optimized guard deployment mapped to historical incident heatmaps. Patrol compliance verified via NFC checkpoints — not self-reporting or radio calls.</p>
+        <div class="mod-feats">
+          <div class="mf"><span class="mf-dot"></span>ML scheduling: guard allocation weighted by historical risk probability per zone</div>
+          <div class="mf"><span class="mf-dot"></span>NFC checkpoint verification: patrol route compliance, timestamped and immutable</div>
+          <div class="mf"><span class="mf-dot"></span>Guard performance analytics: response time, report quality, patrol compliance rate</div>
+          <div class="mf"><span class="mf-dot"></span>Welfare check: no movement for 20 min in active zone triggers supervisor ping</div>
+          <div class="mf"><span class="mf-dot"></span>Structured shift handover: incoming guard briefed via app on all prior-shift events</div>
+        </div>
+        <div class="mod-status"><div class="live-dot"></div><span>ACTIVE · LIVE</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<section class="demo" id="solutions">
+  <div class="container">
+    <div class="sec-label reveal"><span class="label">Live Intelligence</span></div>
+    <h2 class="sec-h2 reveal">Security intelligence,<br><span>happening right now.</span></h2>
+    <p class="sec-sub reveal">What Skyrenth's Command Center surfaces across a live enterprise facility — in real time, every second.</p>
+    <div class="demo-grid">
+      <div class="demo-stats">
+        <div class="dsc cyan reveal"><div class="dsc-l">Active Visitors</div><div class="dsc-v">2,847</div><div class="dsc-s">14 facilities · ↑12% today</div></div>
+        <div class="dsc green reveal"><div class="dsc-l">Access Events / Hour</div><div class="dsc-v">4,210</div><div class="dsc-s">Processed in real time</div></div>
+        <div class="dsc amber reveal"><div class="dsc-l">Anomalies Flagged</div><div class="dsc-v">23</div><div class="dsc-s">Last 24 hrs · 18 resolved</div></div>
+        <div class="dsc red reveal"><div class="dsc-l">Open P1 Incidents</div><div class="dsc-v">1</div><div class="dsc-s">Gate 3 · Escalated 4m ago</div></div>
+      </div>
+      <div class="demo-card reveal">
+        <div class="dc-head">
+          <span class="dc-title">Live Access & Visitor Event Log</span>
+          <div class="dc-live"><div class="dc-live-dot"></div><span>REAL-TIME FEED</span></div>
+        </div>
+        <table class="dt">
+          <thead>
+            <tr>
+              <th>TIME</th><th>TYPE</th><th>PERSON / ENTITY</th><th>ZONE</th><th>RISK / STATUS</th>
+            </tr>
+          </thead>
+          <tbody id="dtbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+  <div class="container">
+    <div class="sec-label reveal" style="justify-content:center"><span class="label">By the Numbers</span></div>
+    <div class="stats-grid">
+      <div class="sb reveal"><div class="sb-num"><span class="ctr" data-t="2.4" data-d="1">0</span><span class="sb-unit">M+</span></div><div class="sb-label">Visitors Processed</div><div class="sb-sub">Across all client facilities</div></div>
+      <div class="sb reveal"><div class="sb-num"><span class="ctr" data-t="94" data-d="0">0</span><span class="sb-unit">%</span></div><div class="sb-label">Faster Incident Response</div><div class="sb-sub">vs. paper/WhatsApp baseline</div></div>
+      <div class="sb reveal"><div class="sb-num"><span class="ctr" data-t="500" data-d="0">0</span><span class="sb-unit">+</span></div><div class="sb-label">Facilities Secured</div><div class="sb-sub">IT parks, manufacturing, healthcare</div></div>
+      <div class="sb reveal"><div class="sb-num"><span class="ctr" data-t="12" data-d="0">0</span><span class="sb-unit">K+</span></div><div class="sb-label">Anomalies / Month</div><div class="sb-sub">Ghost access, velocity, tailgating</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="sec-label reveal"><span class="label">Deployment</span></div>
+    <h2 class="sec-h2 reveal">Live in <span>6 weeks.</span><br>No rip-and-replace.</h2>
+    <p class="sec-sub reveal">We sit on top of your existing hardware. No migration. No downtime to current operations.</p>
+    <div class="how-steps">
+      <div class="hs reveal">
+        <div class="hs-num">01</div>
+        <h3 class="hs-title">Connect Your Hardware</h3>
+        <p class="hs-desc">We integrate via API with your existing access control system — or deploy a Skyrenth Edge Device for legacy hardware with no API. Zero downtime to current operations. Works with cameras you already have.</p>
+        <div class="hs-tags">
+          <span class="hs-tag">Matrix COSEC</span><span class="hs-tag">Lenel S2</span><span class="hs-tag">Genetec</span><span class="hs-tag">HID Global</span><span class="hs-tag">+4 more</span>
+        </div>
+      </div>
+      <div class="hs reveal">
+        <div class="hs-num">02</div>
+        <h3 class="hs-title">Baseline & Train</h3>
+        <p class="hs-desc">Skyrenth ingests your historical access events and incident data to establish behavioral baselines. AI models start learning from day one — anomaly detection becomes actionable within 3–4 weeks of live data.</p>
+        <div class="hs-tags">
+          <span class="hs-tag">AI Baseline Training</span><span class="hs-tag">Behavioral Modeling</span><span class="hs-tag">Guard App Onboarding</span>
+        </div>
+      </div>
+      <div class="hs reveal">
+        <div class="hs-num">03</div>
+        <h3 class="hs-title">Intelligence Goes Live</h3>
+        <p class="hs-desc">Command Center activates. Guards get their app. Anomaly detection, visitor risk scoring, predictive scheduling, and incident pattern analysis run from day one — all in a single dashboard your team actually uses.</p>
+        <div class="hs-tags">
+          <span class="hs-tag">Command Center Live</span><span class="hs-tag">Anomaly Detection</span><span class="hs-tag">Compliance Exports</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEGMENTS -->
+<section class="segs">
+  <div class="container">
+    <div class="sec-label reveal"><span class="label">Who We Serve</span></div>
+    <h2 class="sec-h2 reveal">Built for <span>high-stakes</span><br>physical environments.</h2>
+    <div class="segs-grid">
+      <div class="sgc reveal">
+        <div class="sg-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div class="sg-title">IT Parks & SEZs</div>
+        <div class="sg-desc">2,000+ visitors/day, multi-building campuses, NASSCOM & DoT compliance, tenant-level access intelligence across every floor.</div>
+      </div>
+      <div class="sgc reveal">
+        <div class="sg-icon"><svg viewBox="0 0 24 24"><path d="M2 20h20M6 20V10l6-7 6 7v10"/><rect x="9" y="15" width="6" height="5"/></svg></div>
+        <div class="sg-title">Manufacturing & Industrial</div>
+        <div class="sg-desc">Contractor workforce management, Factory Act compliance, multi-gate operations with 50–200 guards and daily labor access cycles.</div>
+      </div>
+      <div class="sgc reveal">
+        <div class="sg-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <div class="sg-title">Healthcare & Hospitals</div>
+        <div class="sg-desc">ICU access control, restricted pharmacy zones, patient elopement prevention, NABH accreditation audit documentation on demand.</div>
+      </div>
+      <div class="sgc reveal">
+        <div class="sg-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="sg-title">Co-working & Managed Offices</div>
+        <div class="sg-desc">Multi-location operators get platform-wide deployment from one contract. Member-level visitor intelligence, white-label ready for IFMs.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="sec-label reveal"><span class="label">Pricing</span></div>
+    <h2 class="sec-h2 reveal">Transparent pricing.<br><span>No surprises.</span></h2>
+    <p class="sec-sub reveal">All plans include Command Center, Guard App, and Visitor Intelligence. No per-visitor charges. No hidden fees.</p>
+    <div class="price-grid">
+      <div class="prc reveal">
+        <div class="prc-name">Starter</div>
+        <div class="prc-val"><span class="prc-cur">₹</span>25,000</div>
+        <div class="prc-per">per month · single facility</div>
+        <ul class="prc-feats">
+          <li><span class="pf-ck">✓</span>Visitor Intelligence Engine</li>
+          <li><span class="pf-ck">✓</span>Incident Reporting Platform</li>
+          <li><span class="pf-ck">✓</span>Up to 500 daily visitors</li>
+          <li><span class="pf-ck">✓</span>10 guard accounts · 3 admin</li>
+          <li><span class="pf-ck">✓</span>12-month audit trail retention</li>
+          <li><span class="pf-ck">✓</span>WhatsApp & email alerts</li>
+        </ul>
+        <a href="#cta" class="prc-cta prc-ghost">GET STARTED →</a>
+      </div>
+      <div class="prc feat reveal">
+        <div class="prc-badge">MOST POPULAR</div>
+        <div class="prc-name">Professional</div>
+        <div class="prc-val"><span class="prc-cur">₹</span>75,000</div>
+        <div class="prc-per">per month · up to 5 facilities</div>
+        <ul class="prc-feats">
+          <li><span class="pf-ck">✓</span>All four platform modules</li>
+          <li><span class="pf-ck">✓</span>AI anomaly detection active</li>
+          <li><span class="pf-ck">✓</span>Up to 2,000 daily visitors</li>
+          <li><span class="pf-ck">✓</span>50 guard · 10 admin accounts</li>
+          <li><span class="pf-ck">✓</span>1 access control integration</li>
+          <li><span class="pf-ck">✓</span>Compliance export templates</li>
+          <li><span class="pf-ck">✓</span>24-month retention</li>
+        </ul>
+        <a href="#cta" class="prc-cta prc-prime">REQUEST DEMO →</a>
+      </div>
+      <div class="prc reveal">
+        <div class="prc-name">Enterprise</div>
+        <div class="prc-val" style="font-size:32px;color:var(--cyan)">Custom</div>
+        <div class="prc-per">unlimited facilities</div>
+        <ul class="prc-feats">
+          <li><span class="pf-ck">✓</span>Everything in Professional</li>
+          <li><span class="pf-ck">✓</span>Skyrenth Edge Device (legacy HW)</li>
+          <li><span class="pf-ck">✓</span>Unlimited guard & admin accounts</li>
+          <li><span class="pf-ck">✓</span>All access control integrations</li>
+          <li><span class="pf-ck">✓</span>White-label for IFM partners</li>
+          <li><span class="pf-ck">✓</span>Dedicated customer success mgr</li>
+          <li><span class="pf-ck">✓</span>99.9% SLA · 5-year retention</li>
+        </ul>
+        <a href="#cta" class="prc-cta prc-ghost">TALK TO SALES →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOUNDER -->
+<section class="founder">
+  <div class="container">
+    <div class="fn-grid">
+      <div class="reveal">
+        <div class="sec-label" style="margin-bottom:22px"><span class="label">From the Founder</span></div>
+        <blockquote class="fn-quote">"Most facilities are running WhatsApp and Excel for physical security. A ₹500-crore IT park shouldn't have less operational intelligence than a food delivery dashboard."</blockquote>
+        <p class="fn-bio">Skyrenth was built from a simple observation: physical security teams have more data than any other operational function — and zero tools to analyze it. We set out to build the intelligence layer security managers actually needed: not another clipboard digitizer, but a system that thinks.</p>
+        <p class="fn-bio">Our platform integrates with what you already have, works offline-first for guards without connectivity, and surfaces intelligence the moment it matters — not three days later in a report nobody reads.</p>
+        <div style="margin-top:28px">
+          <div class="fn-name">NIHAR GANDHI</div>
+          <div class="fn-role">FOUNDER & CEO · SKYRENTH</div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="fn-card">
+          <div class="fn-avatar">NG</div>
+          <div style="font-family:var(--fc);font-size:20px;font-weight:600;color:var(--t1);margin-bottom:4px">Nihar Gandhi</div>
+          <div style="font-family:var(--fm);font-size:10px;color:var(--t3);letter-spacing:2px;margin-bottom:14px">FOUNDER & CEO · SKYRENTH</div>
+          <div style="font-size:14px;color:var(--t2);line-height:1.65;margin-bottom:18px">Building the physical security intelligence layer for Indian enterprises — starting with IT parks, manufacturing, and healthcare facilities.</div>
+          <div class="fn-metrics">
+            <div class="fm-box"><div class="fm-v">4+</div><div class="fm-l">Modules Live</div></div>
+            <div class="fm-box"><div class="fm-v">8</div><div class="fm-l">Integrations</div></div>
+            <div class="fm-box"><div class="fm-v">₹25L</div><div class="fm-l">ARR Target Y1</div></div>
+            <div class="fm-box"><div class="fm-v">India</div><div class="fm-l">First Market</div></div>
+          </div>
+          <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-family:var(--fm);font-size:11px;color:var(--t3);letter-spacing:.5px">✉ nihar@skyrenth.com</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="cta">
+  <div class="cta-glow"></div>
+  <div class="container">
+    <div class="cta-inner reveal">
+      <div class="label" style="justify-content:center;display:flex;margin-bottom:14px">Ready to Secure Your Facility?</div>
+      <h2 class="cta-h2">Stop reacting.<br><span>Start predicting.</span></h2>
+      <p class="cta-sub">Request a live demo — we'll walk you through what Skyrenth surfaces in your first 48 hours of data.</p>
+      <div class="cta-btns">
+        <a href="mailto:nihar@skyrenth.com" class="btn-hero btn-hp">REQUEST DEMO →</a>
+        <a href="#platform" class="btn-hero btn-hs">EXPLORE PLATFORM</a>
+      </div>
+      <p class="cta-note">⟡ DPDP COMPLIANT · ISO 27001 READY · INDIA DATA RESIDENCY · NO MIGRATION REQUIRED</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <span class="logo-text" style="display:block;font-size:19px;margin-bottom:12px">SKY<span style="color:var(--cyan)">RENTH</span></span>
+        <p class="foot-tag">Physical security intelligence for the modern enterprise. No rip-and-replace. Just intelligence — layered over what you already have.</p>
+        <div class="foot-contact">nihar@skyrenth.com</div>
+      </div>
+      <div>
+        <div class="foot-col-t">Platform</div>
+        <ul class="foot-links">
+          <li><a href="#platform">Visitor Intelligence</a></li>
+          <li><a href="#platform">Access Audit</a></li>
+          <li><a href="#platform">Incident Intelligence</a></li>
+          <li><a href="#platform">Guard Operations</a></li>
+          <li><a href="#platform">Command Center</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="foot-col-t">Solutions</div>
+        <ul class="foot-links">
+          <li><a href="#solutions">IT Parks & SEZs</a></li>
+          <li><a href="#solutions">Manufacturing</a></li>
+          <li><a href="#solutions">Healthcare</a></li>
+          <li><a href="#solutions">Co-working</a></li>
+          <li><a href="#solutions">Data Centers</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="foot-col-t">Compliance</div>
+        <ul class="foot-links">
+          <li><a href="#">DPDP Act</a></li>
+          <li><a href="#">ISO 27001</a></li>
+          <li><a href="#">SOC 2 Type II</a></li>
+          <li><a href="#">Factory Act</a></li>
+          <li><a href="#">NASSCOM Guidelines</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div class="foot-copy">© 2025 Skyrenth Security Intelligence · Founded by Nihar Gandhi · All rights reserved.</div>
+      <div class="foot-badges">
+        <span class="fbadge">DPDP</span>
+        <span class="fbadge">ISO 27001</span>
+        <span class="fbadge">SOC 2</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// TYPEWRITER
+(function(){
+  const el=document.getElementById('tw');
+  const txt='to Security Decisions.';
+  el.textContent='';
+  let i=0;
+  setTimeout(()=>{
+    const t=setInterval(()=>{
+      el.textContent+=txt[i++];
+      if(i>=txt.length)clearInterval(t);
+    },58);
+  },900);
+})();
+
+// LIVE EVENT FEED
+const EVTS=[
+  {time:'14:23:07',type:'GRANTED',cls:'eg',msg:'Ravi Kumar → Server Room B-3 · Clearance L3'},
+  {time:'14:23:12',type:'DENIED',cls:'ed',msg:'Badge #4429 rejected · Executive Floor 8 · FLAGGED'},
+  {time:'14:23:15',type:'VISITOR',cls:'ec',msg:'Priya Mehta (Infosys) · Risk: 12/100 · Host: A. Singh'},
+  {time:'14:23:19',type:'PATROL',cls:'ep',msg:'Guard Alpha · Zone 7 Checkpoint · Route clear'},
+  {time:'14:23:24',type:'ANOMALY',cls:'ea',msg:'Velocity alert: Badge 1847 · 3 floors in 90 seconds'},
+  {time:'14:23:28',type:'GRANTED',cls:'eg',msg:'Anika Sharma → R&D Lab Entrance · Badge 2291'},
+  {time:'14:23:33',type:'INCIDENT',cls:'ei',msg:'Suspicious vehicle · Gate 3 North · P1 ESCALATED'},
+  {time:'14:23:38',type:'VISITOR',cls:'ec',msg:'Vikram Patel (TATA) · Biometric match ✓ · Level 1'},
+  {time:'14:23:43',type:'GRANTED',cls:'eg',msg:'Sneha Roy → Finance Wing · After-hours pre-cleared'},
+  {time:'14:23:48',type:'ANOMALY',cls:'ea',msg:'Ghost access: Ex-emp badge still active · Block init.'},
+];
+const feed=document.getElementById('efeed');
+let ei=0;
+function addEv(){
+  const e=EVTS[ei%EVTS.length];
+  const d=document.createElement('div');
+  d.className='ev';
+  d.innerHTML=`<span class="ev-time">${e.time}</span><span class="ev-type ${e.cls}">${e.type}</span><span class="ev-msg">${e.msg}</span>`;
+  feed.insertBefore(d,feed.firstChild);
+  while(feed.children.length>6)feed.removeChild(feed.lastChild);
+  ei++;
+}
+for(let i=5;i>=0;i--){ei=i;addEv();}
+ei=6;
+setInterval(addEv,3200);
+
+// Visitor count fluctuate
+setInterval(()=>{
+  const el=document.getElementById('vcnt');
+  if(el)el.textContent=247+Math.floor(Math.random()*7-3);
+},4200);
+
+// TICKER
+const TICKS=[
+  {type:'GRANTED',cls:'eg',msg:'Ravi Kumar · Server Room B-3'},
+  {type:'ANOMALY',cls:'ea',msg:'Velocity alert: Badge #1847 · 3 floors / 90s'},
+  {type:'VISITOR',cls:'ec',msg:'Priya Mehta (Infosys) · Risk Score: 12/100'},
+  {type:'DENIED',cls:'ed',msg:'Unknown badge rejected · Executive Floor 8'},
+  {type:'PATROL',cls:'ep',msg:'Guard Alpha completed Zone 7 sweep · Clear'},
+  {type:'GRANTED',cls:'eg',msg:'Anika Sharma · R&D Lab Entrance'},
+  {type:'INCIDENT',cls:'ei',msg:'P1 Alert: Suspicious vehicle · Gate 3 North'},
+  {type:'GRANTED',cls:'eg',msg:'Sneha Roy · Finance Wing · After-hours cleared'},
+];
+const ticker=document.getElementById('ticker');
+[...TICKS,...TICKS].forEach(t=>{
+  const d=document.createElement('div');
+  d.className='t-item';
+  d.innerHTML=`<span class="t-chip ${t.cls}">${t.type}</span>${t.msg}`;
+  ticker.appendChild(d);
+});
+
+// DEMO TABLE
+const ROWS=[
+  {time:'14:23:48',type:'ANOMALY',cls:'ea',person:'Badge #4429 (Unknown)',zone:'Executive Floor 8',risk:'<span class="chip chip-high">● HIGH 84</span>'},
+  {time:'14:23:43',type:'VISITOR',cls:'ec',person:'Vikram Patel (TATA)',zone:'Conf Room 4F',risk:'<span class="chip chip-low">● LOW 9</span>'},
+  {time:'14:23:38',type:'GRANTED',cls:'eg',person:'Anika Sharma',zone:'R&D Lab',risk:'<span class="chip chip-low">● CLEAR</span>'},
+  {time:'14:23:33',type:'INCIDENT',cls:'ei',person:'Gate 3 Guard — Auto',zone:'Gate 3 North',risk:'<span class="chip chip-high">● P1 OPEN</span>'},
+  {time:'14:23:28',type:'ANOMALY',cls:'ea',person:'Badge #1847 — Ritu M.',zone:'3 floors / 90s',risk:'<span class="chip chip-med">● FLAG 61</span>'},
+  {time:'14:23:19',type:'PATROL',cls:'ep',person:'Guard Alpha',zone:'Zone 7',risk:'<span class="chip chip-low">● CLEAR</span>'},
+  {time:'14:23:15',type:'VISITOR',cls:'ec',person:'Priya Mehta (Infosys)',zone:'Conf Room 4F',risk:'<span class="chip chip-low">● LOW 12</span>'},
+  {time:'14:23:07',type:'GRANTED',cls:'eg',person:'Ravi Kumar',zone:'Server Room B-3',risk:'<span class="chip chip-low">● CLEAR</span>'},
+];
+const tbody=document.getElementById('dtbody');
+ROWS.forEach((r,i)=>{
+  const tr=document.createElement('tr');
+  if(i===0)tr.className='new-row';
+  tr.innerHTML=`<td style="font-family:var(--fm);color:var(--t3);font-size:10px">${r.time}</td><td><span class="ev-type ${r.cls}">${r.type}</span></td><td>${r.person}</td><td style="color:var(--t3)">${r.zone}</td><td>${r.risk}</td>`;
+  tbody.appendChild(tr);
+});
+let di=0;
+setInterval(()=>{
+  const r=ROWS[di%ROWS.length];
+  const tr=document.createElement('tr');
+  tr.className='new-row';
+  const n=new Date();
+  const t=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+  tr.innerHTML=`<td style="font-family:var(--fm);color:var(--t3);font-size:10px">${t}</td><td><span class="ev-type ${r.cls}">${r.type}</span></td><td>${r.person}</td><td style="color:var(--t3)">${r.zone}</td><td>${r.risk}</td>`;
+  tbody.insertBefore(tr,tbody.firstChild);
+  while(tbody.children.length>10)tbody.removeChild(tbody.lastChild);
+  di++;
+},4000);
+
+// SCROLL REVEAL
+const revEls=document.querySelectorAll('.reveal');
+const ro=new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('vis'),i*70);
+      ro.unobserve(e.target);
+    }
+  });
+},{threshold:.08});
+revEls.forEach(el=>ro.observe(el));
+
+// COUNTERS
+const ctrs=document.querySelectorAll('.ctr');
+const co=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const el=e.target;
+      const tgt=parseFloat(el.dataset.t);
+      const dec=parseInt(el.dataset.d||'0');
+      let v=0;const dur=2000,step=16;
+      const inc=tgt/(dur/step);
+      const ti=setInterval(()=>{
+        v+=inc;
+        if(v>=tgt){v=tgt;clearInterval(ti);}
+        el.textContent=dec>0?v.toFixed(dec):Math.floor(v);
+      },step);
+      co.unobserve(el);
+    }
+  });
+},{threshold:.5});
+ctrs.forEach(c=>co.observe(c));
+
+// SMOOTH SCROLL
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const id=a.getAttribute('href').slice(1);
+    const el=document.getElementById(id);
+    if(el){e.preventDefault();el.scrollIntoView({behavior:'smooth'});}
+  });
+});
+</script>
+</body>
+</html>
